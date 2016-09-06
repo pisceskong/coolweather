@@ -44,7 +44,7 @@ public class HttpUtil {
 					// TODO Auto-generated catch block
 					if (listener != null) {
 						listener.onError(e);
-					}
+					} 
 				}finally{
 					if (connection != null) {
 						connection.disconnect();

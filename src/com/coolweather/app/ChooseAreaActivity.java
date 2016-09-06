@@ -18,6 +18,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.Window;
@@ -31,6 +32,9 @@ public class ChooseAreaActivity extends Activity {
 	public static final int LEVEL_PROVINCE = 0;
 	public static final int LEVEL_CITY = 1;
 	public static final int LEVEL_COUNTY = 2;
+	
+	private boolean isFromWeatherActivity;
+	
 	
 	private ProgressDialog progressDialog;
 	private TextView titleText;
@@ -56,8 +60,10 @@ public class ChooseAreaActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        isFromWeatherActivity = getIntent().getBooleanExtra("from_weather_activity", false);
+        
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if (prefs.getBoolean("city_selected", false)) {
+        if (prefs.getBoolean("city_selected", false) && !isFromWeatherActivity) {
 			Intent intent = new Intent(this, WeatherActivity.class);
 			startActivity(intent);
 			finish();
@@ -75,19 +81,23 @@ public class ChooseAreaActivity extends Activity {
         listView.setAdapter(adapter);
         
         coolWeatherDB = CoolWeatherDB.getInstance(this);
+        //coolWeatherDB.deleteDB(this);
         
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				// TODO Auto-generated method stub
+				// TODO Auto-generated method stub 
 				if (currentLevel == LEVEL_PROVINCE) {
 					selectedProvince = provinceList.get(arg2);
-					queryCities();
+					queryCities(); 
 				} else if(currentLevel == LEVEL_CITY){
 					selectedCity = cityList.get(arg2);
-					queryCities();
+					
+					//Log.i("++++++++++++++++", String.valueOf(selectedCity.getId()));
+					
+					queryCounties();
 				} else if (currentLevel == LEVEL_COUNTY) {
 					String countyCode = countyList.get(arg2).getCountyCode();
 					Intent intent = new Intent(ChooseAreaActivity.this, WeatherActivity.class);
@@ -109,6 +119,7 @@ public class ChooseAreaActivity extends Activity {
     private void queryProvinces() {
 		provinceList = coolWeatherDB.loadProvinces();
 		if (provinceList.size() > 0) {
+			Log.i("ChooseAreaActivity", String.valueOf(provinceList.size()));
 			dataList.clear();
 			for(Province province : provinceList){
 				dataList.add(province.getProvinceName());
@@ -129,22 +140,27 @@ public class ChooseAreaActivity extends Activity {
     
     private void queryCities() {
 		cityList = coolWeatherDB.loadCities(selectedProvince.getId());
+		
 		if (cityList.size() > 0) {
 			dataList.clear();
 			for(City city : cityList){
+				
+				Log.i("++++++++++++++++", String.valueOf(city.getId()));
+				Log.i("----------------", city.getCityName());
 				dataList.add(city.getCityName());
+				
 			}
 			adapter.notifyDataSetChanged();
 			listView.setSelection(0);
 			titleText.setText(selectedProvince.getProvinceName());
 			currentLevel = LEVEL_CITY;
 		} else {
-			queryFromServer(selectedProvince.getPrivinceCode(), "city");
+			queryFromServer(selectedProvince.getProvinceCode(), "city");
 		}
 	}
     
     /**
-     * 
+     * 查询某市下的所有县，优先从数据库查询，如果没有查询到再去服务器上查询
      */
     private void queryCounties() {
 		countyList =  coolWeatherDB.loadCounties(selectedCity.getId());
@@ -162,17 +178,14 @@ public class ChooseAreaActivity extends Activity {
 		}
 	}
     
-    
-    
-    
-    
+
     /**
      * 根据传入的代号和类型从服务器上查询省市县数据
      */
     
     private void queryFromServer(final String code, final String type) {
 	   String address = null;
-	   if (!TextUtils.isEmpty(address)) {
+	   if (!TextUtils.isEmpty(code)) {
 		   address = "http://www.weather.com.cn/data/list3/city" + code + ".xml";
 	   } else {
 		   address = "http://www.weather.com.cn/data/list3/city.xml";
@@ -183,7 +196,7 @@ public class ChooseAreaActivity extends Activity {
 		@Override
 		public void onFinish(String response) {
 			// TODO Auto-generated method stub
-			
+			Log.i("ChooseAreaActivity", "onFinish");
 			boolean result =  false;
 			if ("province".equals(type)) {
 				result = Utility.handleProvincesResponse(coolWeatherDB, response);
@@ -191,6 +204,7 @@ public class ChooseAreaActivity extends Activity {
 				result = Utility.handleCitiesResponse(coolWeatherDB, 
 						response, selectedProvince.getId());
 			} else if ("county".equals(type)) {
+				//有问题
 				result = Utility.handleCountiesResponse(coolWeatherDB, 
 						response, selectedCity.getId());
 			} else {
@@ -216,6 +230,8 @@ public class ChooseAreaActivity extends Activity {
 						
 					}
 				});
+			}else {
+				Log.i("ChooseAreaActivity", "response is null");
 			}
 			
 		}
@@ -223,15 +239,13 @@ public class ChooseAreaActivity extends Activity {
 		@Override
 		public void onError(Exception e) {
 			// TODO Auto-generated method stub
-			
+			Log.i("ChooseAreaActivity", "On Error...request error");
 		}
 	});
 	
     } 
     
-    
-   
-   
+
    private void showProgressDialog() {
 	   
 	   if (progressDialog == null) {
@@ -249,9 +263,7 @@ public class ChooseAreaActivity extends Activity {
 		}
 	}
     
-   	
-   	
-   	
+ 	
     @Override
 	public void onBackPressed() {
 		// TODO Auto-generated method stub
@@ -260,6 +272,10 @@ public class ChooseAreaActivity extends Activity {
 		} else if (currentLevel == LEVEL_CITY) {
 			queryCities();
 		} else {
+			if (isFromWeatherActivity) {
+				Intent intent = new Intent(this, WeatherActivity.class);
+				startActivity(intent);
+			}
 			finish();
 		}
 	}

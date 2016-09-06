@@ -28,10 +28,10 @@ public class Utility {
 			String[] allProvinces = response.split(",");
 			if (allProvinces != null && allProvinces.length > 0) {
 				for (String p : allProvinces) {
-					String[] array = p.split("|");//判断array数组是否为空？
+					String[] array = p.split("\\|");//判断array数组是否为空？
 					Province province = new Province();
 					province.setProvinceName(array[1]);
-					province.setPrivinceCode(array[0]);
+					province.setProvinceCode(array[0]);
 					
 					coolWeatherDB.saveProvice(province);
 				}
@@ -53,7 +53,7 @@ public class Utility {
 			String[] allCities = response.split(",");
 			if (allCities != null && allCities.length > 0) {
 				for (String p : allCities) {
-					String[] array = p.split("|");//判断array数组是否为空？
+					String[] array = p.split("\\|");//判断array数组是否为空？
 					City city = new City();
 					city.setCityName(array[1]);
 					city.setCityCode(array[0]);
@@ -80,7 +80,7 @@ public class Utility {
 			String[] allCounties = response.split(",");
 			if (allCounties != null && allCounties.length > 0) {
 				for (String p : allCounties) {
-					String[] array = p.split("|");//判断array数组是否为空？
+					String[] array = p.split("\\|");//判断array数组是否为空？
 					County county = new County();
 					county.setCountyName(array[1]);
 					county.setCountyCode(array[0]);
