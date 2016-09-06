@@ -43,7 +43,7 @@ public class HttpUtil {
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					if (listener != null) {
-						listener.onErrow(e);
+						listener.onError(e);
 					}
 				}finally{
 					if (connection != null) {

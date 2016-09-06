@@ -4,6 +4,6 @@ public interface HttpCallbackListener {
 	
 	void onFinish(String response);
 
-	void onErrow(Exception e);
+	void onError(Exception e);
 	
 }

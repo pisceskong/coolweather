@@ -12,8 +12,11 @@ import com.coolweather.app.util.HttpUtil;
 import com.coolweather.app.util.Utility;
 
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
@@ -52,6 +55,16 @@ public class ChooseAreaActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getBoolean("city_selected", false)) {
+			Intent intent = new Intent(this, WeatherActivity.class);
+			startActivity(intent);
+			finish();
+			return;
+		}
+        
+        
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.choose_area);
         
@@ -75,6 +88,12 @@ public class ChooseAreaActivity extends Activity {
 				} else if(currentLevel == LEVEL_CITY){
 					selectedCity = cityList.get(arg2);
 					queryCities();
+				} else if (currentLevel == LEVEL_COUNTY) {
+					String countyCode = countyList.get(arg2).getCountyCode();
+					Intent intent = new Intent(ChooseAreaActivity.this, WeatherActivity.class);
+					intent.putExtra("county_code", countyCode);
+					startActivity(intent);
+					finish();
 				}
 			}
         	
@@ -202,7 +221,7 @@ public class ChooseAreaActivity extends Activity {
 		}
 		
 		@Override
-		public void onErrow(Exception e) {
+		public void onError(Exception e) {
 			// TODO Auto-generated method stub
 			
 		}
