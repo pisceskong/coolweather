@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import android.util.Log;
+
 public class HttpUtil {
 	
 	public static void sendHttpRequest(final String address, 
@@ -16,14 +18,16 @@ public class HttpUtil {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
+				Log.e("HttpUtil Run", "request");
+				
 				HttpURLConnection connection = null;
 				
 				try {
 					URL url = new URL(address);
 					connection = (HttpURLConnection) url.openConnection();
 					connection.setRequestMethod("GET");
-					connection.setConnectTimeout(8000);
-					connection.setReadTimeout(8000);
+					connection.setConnectTimeout(80000);
+					connection.setReadTimeout(80000);
 					
 					InputStream in = connection.getInputStream();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(in));
